@@ -1,342 +1,373 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
+// Define styles as an object
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '16px',
+    gap: '32px',
+  },
+  heading: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: '#f9fafb',
+    padding: '16px',
+    borderRadius: '8px',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+  },
+  cardTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    marginBottom: '16px',
+  },
+  chartContainer: {
+    height: '384px',
+  },
+  smallChartContainer: {
+    height: '256px',
+  },
+  gridContainer: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '24px',
+  },
+  select: {
+    padding: '8px',
+    border: '1px solid #d1d5db',
+    borderRadius: '6px',
+    width: '100%',
+    marginBottom: '16px',
+  },
+  selectContainer: {
+    marginBottom: '16px',
+  },
+  tableContainer: {
+    overflowX: 'auto',
+  },
+  table: {
+    minWidth: '100%',
+    backgroundColor: 'white',
+  },
+  tableHead: {
+    backgroundColor: '#e5e7eb',
+    color: '#4b5563',
+    textTransform: 'uppercase',
+    fontSize: '14px',
+    lineHeight: '20px',
+  },
+  tableHeadSecondary: {
+    backgroundColor: '#f3f4f6',
+    color: '#4b5563',
+    fontSize: '14px',
+    lineHeight: '20px',
+  },
+  tableHeadCell: {
+    padding: '12px 24px',
+    textAlign: 'left',
+  },
+  tableHeadCellCenter: {
+    padding: '12px 8px',
+    textAlign: 'center',
+  },
+  tableBody: {
+    color: '#4b5563',
+    fontSize: '14px',
+  },
+  tableRow: {
+    borderBottom: '1px solid #e5e7eb',
+  },
+  tableRowHover: {
+    ':hover': {
+      backgroundColor: '#f3f4f6',
+    },
+  },
+  tableCell: {
+    padding: '12px 24px',
+    textAlign: 'left',
+  },
+  tableCellCenter: {
+    padding: '12px 8px',
+    textAlign: 'center',
+  },
+};
+
+// Media query for larger screens
+const mediaQuery = window.matchMedia('(min-width: 768px)');
+if (mediaQuery.matches) {
+  styles.gridContainer.gridTemplateColumns = '1fr 1fr';
+}
+
 const NetworkDensityVisualizer = () => {
-  // Dataset from the table
-  const data = [
-    {
-      dataset: 'S-DBLP',
-      edge: { total: 6, opt: 22, eds: 22 },
-      triangle: { opt: 55, eds: 55 },
-      fourClique: { opt: 99, eds: 99 },
-      fiveClique: { opt: 132, eds: 132 },
-      sixClique: { opt: 73.5, eds: 66 },
-      twoStar: { opt: 165, eds: 165 }
-    },
-    {
-      dataset: 'Yeast',
-      edge: { total: 3.13, opt: 2.11, eds: 0.467 },
-      triangle: { opt: 0.67, eds: 0.0 },
-      fourClique: { opt: 0.0, eds: 0.0 },
-      fiveClique: { opt: 0.0, eds: 0.0 },
-      sixClique: { opt: 111.3, eds: 18.13 },
-      twoStar: { opt: 20, eds: 19.2 }
-    },
-    {
-      dataset: 'Netscience',
-      edge: { total: 9.50, opt: 57.25, eds: 57.25 },
-      triangle: { opt: 242.3, eds: 242.3 },
-      fourClique: { opt: 775.2, eds: 775.2 },
-      fiveClique: { opt: 1938, eds: 1938 },
-      sixClique: { opt: 171, eds: 171 },
-      twoStar: { opt: 726.8, eds: 726.8 }
-    },
-    {
-      dataset: 'As-733',
-      edge: { total: 8.19, opt: 31.43, eds: 31.35 },
-      triangle: { opt: 68.67, eds: 67.94 },
-      fourClique: { opt: 92.78, eds: 90.23 },
-      fiveClique: { opt: 79.37, eds: 75.13 },
-      sixClique: { opt: 826.3, eds: 153.8 },
-      twoStar: { opt: 3376, eds: 437.7 }
-    }
+  // Updated dataset based on the provided tables
+  // Table 1: Network information
+  const networkInfo = [
+    { network: 'AS-733', nodes: 1486, edges: 3172, domain: 'Internet AS' },
+    { network: 'AS-Caida', nodes: 26475, edges: 106762, domain: 'Internet AS' },
+    { network: 'CA-HepTh', nodes: 9877, edges: 51971, domain: 'Collaboration' },
+    { network: 'Netscience', nodes: 1589, edges: 2742, domain: 'Collaboration' },
+    { network: 'Yeast', nodes: 1460, edges: 1950, domain: 'Biological' }
   ];
 
-  // Prepare data for the pattern comparison
-  const prepareComparisonData = (pattern) => {
-    return data.map(item => ({
-      name: item.dataset,
-      opt: item[pattern].opt,
-      eds: item[pattern].eds,
-      total: item[pattern].total
-    }));
+  // Table 2: Edge density (h = 2)
+  const edgeDensityData = [
+    { dataset: 'AS-733', algorithm: 'Exact', time: 0.50, density: 8.00, memory: 0.10 },
+    { dataset: 'AS-733', algorithm: 'CoreExact', time: 0.10, density: 8.00, memory: 0.05 },
+    { dataset: 'AS-Caida', algorithm: 'Exact', time: 45.0, density: 0.14, memory: 1.20 },
+    { dataset: 'AS-Caida', algorithm: 'CoreExact', time: 2.5, density: 0.14, memory: 0.30 },
+    { dataset: 'CA-HepTh', algorithm: 'Exact', time: 17.9, density: 1.00, memory: 0.50 },
+    { dataset: 'CA-HepTh', algorithm: 'CoreExact', time: 0.8, density: 1.00, memory: 0.10 },
+    { dataset: 'Netscience', algorithm: 'Exact', time: 120.0, density: 9.40, memory: 0.30 },
+    { dataset: 'Netscience', algorithm: 'CoreExact', time: 1.2, density: 9.40, memory: 0.08 },
+    { dataset: 'Yeast', algorithm: 'Exact', time: 10.0, density: 3.10, memory: 0.08 },
+    { dataset: 'Yeast', algorithm: 'CoreExact', time: 0.2, density: 3.10, memory: 0.02 }
+  ];
+
+  // Table 3: Higher-order densities (h = 3, 4)
+  const higherOrderData = [
+    { dataset: 'AS-733', h: 3, density: 31.0, exactTime: 2.0, coreExactTime: 0.30 },
+    { dataset: 'AS-733', h: 4, density: 68.5, exactTime: 4.5, coreExactTime: 0.50 },
+    { dataset: 'CA-HepTh', h: 3, density: 155, exactTime: 50.0, coreExactTime: 1.5 },
+    { dataset: 'CA-HepTh', h: 4, density: 242.0, exactTime: 90.0, coreExactTime: 2.0 },
+    { dataset: 'Netscience', h: 3, density: 57.2, exactTime: 30.0, coreExactTime: 0.8 },
+    { dataset: 'Netscience', h: 4, density: 242.3, exactTime: 60.0, coreExactTime: 1.0 }
+  ];
+
+  // Prepare data for the comparison between edge and clique densities
+  const prepareEdgeVsCliqueData = () => {
+    const datasets = ['AS-733', 'CA-HepTh', 'Netscience'];
+    return datasets.map(ds => {
+      const edgeData = edgeDensityData.find(item => item.dataset === ds && item.algorithm === 'Exact');
+      const cliqueData3 = higherOrderData.find(item => item.dataset === ds && item.h === 3);
+      const cliqueData4 = higherOrderData.find(item => item.dataset === ds && item.h === 4);
+      
+      return {
+        name: ds,
+        edgeDensity: edgeData ? edgeData.density : 0,
+        cliqueDensity3: cliqueData3 ? cliqueData3.density : 0,
+        cliqueDensity4: cliqueData4 ? cliqueData4.density : 0
+      };
+    });
   };
 
-  // Prepare data for the radar chart
-  const prepareRadarData = () => {
-    return data.map(item => ({
-      dataset: item.dataset,
-      edge: item.edge.opt || 0,
-      triangle: item.triangle.opt || 0,
-      fourClique: item.fourClique.opt || 0,
-      fiveClique: item.fiveClique.opt || 0,
-      sixClique: item.sixClique.opt || 0,
-      twoStar: item.twoStar.opt || 0
-    }));
+  // Prepare data for the algorithm comparison
+  const prepareAlgorithmComparisonData = () => {
+    const datasets = ['AS-733', 'AS-Caida', 'CA-HepTh', 'Netscience', 'Yeast'];
+    return datasets.map(ds => {
+      const exactData = edgeDensityData.find(item => item.dataset === ds && item.algorithm === 'Exact');
+      const coreExactData = edgeDensityData.find(item => item.dataset === ds && item.algorithm === 'CoreExact');
+      
+      return {
+        name: ds,
+        exactTime: exactData ? exactData.time : 0,
+        coreExactTime: coreExactData ? coreExactData.time : 0,
+        speedup: exactData && coreExactData ? exactData.time / coreExactData.time : 0
+      };
+    });
   };
 
-  // Patterns overview data
-  const patternOverviewData = [
-    { name: 'Edge', S_DBLP: 22, Yeast: 2.11, Netscience: 57.25, As_733: 31.43 },
-    { name: 'Triangle', S_DBLP: 55, Yeast: 0.67, Netscience: 242.3, As_733: 68.67 },
-    { name: 'Four-Clique', S_DBLP: 99, Yeast: 0.0, Netscience: 775.2, As_733: 92.78 },
-    { name: 'Five-Clique', S_DBLP: 132, Yeast: 0.0, Netscience: 1938, As_733: 79.37 },
-    { name: 'Six-Clique', S_DBLP: 73.5, Yeast: 111.3, Netscience: 171, As_733: 826.3 },
-    { name: 'Two-Star', S_DBLP: 165, Yeast: 20, Netscience: 726.8, As_733: 3376 }
+  // Prepare data for the performance radar chart
+  const preparePerformanceRadarData = () => {
+    const datasets = ['AS-733', 'CA-HepTh', 'Netscience', 'Yeast'];
+    return datasets.map(ds => {
+      const exactData = edgeDensityData.find(item => item.dataset === ds && item.algorithm === 'Exact');
+      const h3Data = higherOrderData.find(item => item.dataset === ds && item.h === 3);
+      
+      return {
+        dataset: ds,
+        memory: exactData ? exactData.memory * 10 : 0, // Scale for visibility
+        time: exactData ? Math.min(exactData.time, 50) : 0, // Cap at 50 for visibility
+        density: exactData ? exactData.density : 0,
+        h3density: h3Data ? h3Data.density / 10 : 0 // Scale for visibility
+      };
+    });
+  };
+
+  // Prepare data for density overview
+  const densityOverviewData = [
+    { name: 'Edge (h=2)', AS_733: 8.00, AS_Caida: 0.14, CA_HepTh: 1.00, Netscience: 9.40, Yeast: 3.10 },
+    { name: '3-Clique', AS_733: 31.0, CA_HepTh: 155, Netscience: 57.2 },
+    { name: '4-Clique', AS_733: 68.5, CA_HepTh: 242.0, Netscience: 242.3 }
   ];
 
-  // Diamond pattern data
-  const diamondData = [
-    { name: 'S-DBLP', opt: 165, eds: 165 },
-    { name: 'Yeast', opt: 20, eds: 19.2 },
-    { name: 'Netscience', opt: 726.8, eds: 726.8 },
-    { name: 'As-733', opt: 3376, eds: 437.7 }
-  ];
-
-  // State to track the selected pattern for comparison
-  const [selectedPattern, setSelectedPattern] = useState('edge');
+  // State to track the selected dataset for comparison
+  const [selectedDataset, setSelectedDataset] = useState('AS-733');
 
   // Chart color scheme
   const colors = {
-    opt: '#8884d8',
-    eds: '#82ca9d',
-    total: '#ffc658',
-    S_DBLP: '#8884d8',
-    Yeast: '#82ca9d',
-    Netscience: '#ffc658',
-    As_733: '#ff8042'
+    exact: '#8884d8',
+    coreExact: '#82ca9d',
+    edgeDensity: '#ffc658',
+    cliqueDensity3: '#ff8042',
+    cliqueDensity4: '#ff4560',
+    AS_733: '#8884d8',
+    AS_Caida: '#82ca9d',
+    CA_HepTh: '#ffc658',
+    Netscience: '#ff8042',
+    Yeast: '#ff4560'
   };
 
-  // Domain calculation for charts
-  const calculateDomain = (data, key) => {
-    if (!data) return [0, 100];
-    const values = data.map(item => Math.max(item[key] || 0, item.eds || 0));
-    const maxValue = Math.max(...values);
-    return [0, maxValue * 1.1]; // Add 10% margin
+  // Find the higher order data for the selected dataset
+  const getHigherOrderDataForDataset = () => {
+    return higherOrderData.filter(item => item.dataset === selectedDataset);
   };
 
   return (
-    <div className="flex flex-col p-4 gap-8">
-      <h1 className="text-2xl font-bold text-center">
-        Network Pattern Density Analysis
+    <div style={styles.container}>
+      <h1 style={styles.heading}>
+        Network Density Analysis
       </h1>
       
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Pattern-Density Overview</h2>
-        <div className="h-96">
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Density Overview</h2>
+        <div style={styles.chartContainer}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={patternOverviewData}
+              data={densityOverviewData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value) => value.toFixed(2)} />
+              <Tooltip formatter={(value) => value ? value.toFixed(2) : 'N/A'} />
               <Legend />
-              <Bar dataKey="S_DBLP" name="S-DBLP" fill={colors.S_DBLP} />
-              <Bar dataKey="Yeast" fill={colors.Yeast} />
+              <Bar dataKey="AS_733" name="AS-733" fill={colors.AS_733} />
+              <Bar dataKey="AS_Caida" name="AS-Caida" fill={colors.AS_Caida} />
+              <Bar dataKey="CA_HepTh" name="CA-HepTh" fill={colors.CA_HepTh} />
               <Bar dataKey="Netscience" fill={colors.Netscience} />
-              <Bar dataKey="As_733" name="As-733" fill={colors.As_733} />
+              <Bar dataKey="Yeast" fill={colors.Yeast} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-50 p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Pattern Comparison</h2>
-          <div className="mb-4">
-            <select 
-              className="p-2 border rounded-md w-full"
-              value={selectedPattern}
-              onChange={(e) => setSelectedPattern(e.target.value)}
-            >
-              <option value="edge">Edge</option>
-              <option value="triangle">Triangle</option>
-              <option value="fourClique">4-Clique</option>
-              <option value="fiveClique">5-Clique</option>
-              <option value="sixClique">6-Clique</option>
-              <option value="twoStar">2-Star</option>
-            </select>
-          </div>
-          <div className="h-64">
+      <div style={styles.gridContainer}>
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Algorithm Performance Comparison</h2>
+          <div style={styles.smallChartContainer}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={prepareComparisonData(selectedPattern)}
+                data={prepareAlgorithmComparisonData()}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis domain={calculateDomain(prepareComparisonData(selectedPattern), 'opt')} />
+                <YAxis />
                 <Tooltip formatter={(value) => value.toFixed(2)} />
                 <Legend />
-                <Bar dataKey="opt" name="ρ-opt" fill={colors.opt} />
-                <Bar dataKey="eds" name="ρ(EDS,Ψ)" fill={colors.eds} />
-                {selectedPattern === 'edge' && <Bar dataKey="total" name="ρ-total" fill={colors.total} />}
+                <Bar dataKey="exactTime" name="Exact Time (s)" fill={colors.exact} />
+                <Bar dataKey="coreExactTime" name="CoreExact Time (s)" fill={colors.coreExact} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
         
-        <div className="bg-gray-50 p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Diamond Pattern Comparison</h2>
-          <div className="h-64">
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Edge vs Clique Density</h2>
+          <div style={styles.smallChartContainer}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={diamondData}
+                data={prepareEdgeVsCliqueData()}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis domain={calculateDomain(diamondData, 'opt')} />
+                <YAxis />
                 <Tooltip formatter={(value) => value.toFixed(2)} />
                 <Legend />
-                <Bar dataKey="opt" name="ρ-opt" fill={colors.opt} />
-                <Bar dataKey="eds" name="ρ(EDS,Ψ)" fill={colors.eds} />
+                <Bar dataKey="edgeDensity" name="Edge Density (h=2)" fill={colors.edgeDensity} />
+                <Bar dataKey="cliqueDensity3" name="3-Clique Density" fill={colors.cliqueDensity3} />
+                <Bar dataKey="cliqueDensity4" name="4-Clique Density" fill={colors.cliqueDensity4} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
         
-        <div className="bg-gray-50 p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Dataset Radar Comparison</h2>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart outerRadius={90} data={prepareRadarData()}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="dataset" />
-                <PolarRadiusAxis angle={30} domain={[0, 500]} />
-                <Radar name="Edge" dataKey="edge" stroke={colors.S_DBLP} fill={colors.S_DBLP} fillOpacity={0.6} />
-                <Radar name="Triangle" dataKey="triangle" stroke={colors.Yeast} fill={colors.Yeast} fillOpacity={0.6} />
-                <Radar name="4-Clique" dataKey="fourClique" stroke={colors.Netscience} fill={colors.Netscience} fillOpacity={0.6} />
-                <Radar name="Two-Star" dataKey="twoStar" stroke={colors.As_733} fill={colors.As_733} fillOpacity={0.6} />
-                <Tooltip />
-                <Legend />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        
-        <div className="bg-gray-50 p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Edge vs Triangle Relationship</h2>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={data}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="dataset" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="edge.opt" name="Edge ρ-opt" stroke={colors.opt} activeDot={{ r: 8 }} />
-                <Line yAxisId="right" type="monotone" dataKey="triangle.opt" name="Triangle ρ-opt" stroke={colors.eds} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+      </div>
+      
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Network Information</h2>
+        <div style={styles.tableContainer}>
+          <table style={styles.table}>
+            <thead>
+              <tr style={styles.tableHead}>
+                <th style={styles.tableHeadCell}>Network</th>
+                <th style={styles.tableHeadCellCenter}>Nodes |V|</th>
+                <th style={styles.tableHeadCellCenter}>Edges |E|</th>
+                <th style={styles.tableHeadCellCenter}>Domain</th>
+              </tr>
+            </thead>
+            <tbody style={styles.tableBody}>
+              {networkInfo.map((network, index) => (
+                <tr key={index} style={{...styles.tableRow, ...styles.tableRowHover}}>
+                  <td style={styles.tableCell}>{network.network}</td>
+                  <td style={styles.tableCellCenter}>{network.nodes.toLocaleString()}</td>
+                  <td style={styles.tableCellCenter}>{network.edges.toLocaleString()}</td>
+                  <td style={styles.tableCellCenter}>{network.domain}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
       
-      <div className="bg-gray-50 p-4 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Comprehensive Data Table</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Edge Density Performance (h=2)</h2>
+        <div style={styles.tableContainer}>
+          <table style={styles.table}>
             <thead>
-              <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                <th className="py-3 px-6 text-left">Dataset</th>
-                <th className="py-3 px-6 text-center" colSpan="3">Edge</th>
-                <th className="py-3 px-6 text-center" colSpan="2">Triangle</th>
-                <th className="py-3 px-6 text-center" colSpan="2">4-Clique</th>
-                <th className="py-3 px-6 text-center" colSpan="2">5-Clique</th>
-                <th className="py-3 px-6 text-center" colSpan="2">6-Clique</th>
-                <th className="py-3 px-6 text-center" colSpan="2">2-Star</th>
-                <th className="py-3 px-6 text-center" colSpan="2">Diamond</th>
-              </tr>
-              <tr className="bg-gray-100 text-gray-600 text-sm leading-normal">
-                <th className="py-3 px-6 text-left"></th>
-                <th className="py-3 px-2 text-center">ρ-total</th>
-                <th className="py-3 px-2 text-center">ρ-opt</th>
-                <th className="py-3 px-2 text-center">ρ(EDS,Ψ)</th>
-                <th className="py-3 px-2 text-center">ρ-opt</th>
-                <th className="py-3 px-2 text-center">ρ(EDS,Ψ)</th>
-                <th className="py-3 px-2 text-center">ρ-opt</th>
-                <th className="py-3 px-2 text-center">ρ(EDS,Ψ)</th>
-                <th className="py-3 px-2 text-center">ρ-opt</th>
-                <th className="py-3 px-2 text-center">ρ(EDS,Ψ)</th>
-                <th className="py-3 px-2 text-center">ρ-opt</th>
-                <th className="py-3 px-2 text-center">ρ(EDS,Ψ)</th>
-                <th className="py-3 px-2 text-center">ρ-opt</th>
-                <th className="py-3 px-2 text-center">ρ(EDS,Ψ)</th>
-                <th className="py-3 px-2 text-center">ρ-opt</th>
-                <th className="py-3 px-2 text-center">ρ(EDS,Ψ)</th>
+              <tr style={styles.tableHead}>
+                <th style={styles.tableHeadCell}>Dataset</th>
+                <th style={styles.tableHeadCellCenter}>Algorithm</th>
+                <th style={styles.tableHeadCellCenter}>Time (s)</th>
+                <th style={styles.tableHeadCellCenter}>Density ρ₂</th>
+                <th style={styles.tableHeadCellCenter}>Memory (GB)</th>
               </tr>
             </thead>
-            <tbody className="text-gray-600 text-sm">
-              <tr className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6 text-left">S-DBLP</td>
-                <td className="py-3 px-2 text-center">6</td>
-                <td className="py-3 px-2 text-center">22</td>
-                <td className="py-3 px-2 text-center">22</td>
-                <td className="py-3 px-2 text-center">55</td>
-                <td className="py-3 px-2 text-center">55</td>
-                <td className="py-3 px-2 text-center">99</td>
-                <td className="py-3 px-2 text-center">99</td>
-                <td className="py-3 px-2 text-center">132</td>
-                <td className="py-3 px-2 text-center">132</td>
-                <td className="py-3 px-2 text-center">73.5</td>
-                <td className="py-3 px-2 text-center">66</td>
-                <td className="py-3 px-2 text-center">165</td>
-                <td className="py-3 px-2 text-center">165</td>
-                <td className="py-3 px-2 text-center">165</td>
-                <td className="py-3 px-2 text-center">165</td>
+            <tbody style={styles.tableBody}>
+              {edgeDensityData.map((item, index) => (
+                <tr key={index} style={{...styles.tableRow, ...styles.tableRowHover}}>
+                  <td style={styles.tableCell}>{item.dataset}</td>
+                  <td style={styles.tableCellCenter}>{item.algorithm}</td>
+                  <td style={styles.tableCellCenter}>{item.time.toFixed(2)}</td>
+                  <td style={styles.tableCellCenter}>{item.density.toFixed(2)}</td>
+                  <td style={styles.tableCellCenter}>{item.memory.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Clique Density Results (h=3,4)</h2>
+        <div style={styles.tableContainer}>
+          <table style={styles.table}>
+            <thead>
+              <tr style={styles.tableHead}>
+                <th style={styles.tableHeadCell}>Dataset</th>
+                <th style={styles.tableHeadCellCenter}>h</th>
+                <th style={styles.tableHeadCellCenter}>Density ρₕ</th>
+                <th style={styles.tableHeadCellCenter}>Exact Time (s)</th>
+                <th style={styles.tableHeadCellCenter}>CoreExact Time (s)</th>
+                <th style={styles.tableHeadCellCenter}>Speedup</th>
               </tr>
-              <tr className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6 text-left">Yeast</td>
-                <td className="py-3 px-2 text-center">3.13</td>
-                <td className="py-3 px-2 text-center">2.11</td>
-                <td className="py-3 px-2 text-center">0.467</td>
-                <td className="py-3 px-2 text-center">0.67</td>
-                <td className="py-3 px-2 text-center">0.0</td>
-                <td className="py-3 px-2 text-center">0.0</td>
-                <td className="py-3 px-2 text-center">0.0</td>
-                <td className="py-3 px-2 text-center">0.0</td>
-                <td className="py-3 px-2 text-center">0.0</td>
-                <td className="py-3 px-2 text-center">111.3</td>
-                <td className="py-3 px-2 text-center">18.13</td>
-                <td className="py-3 px-2 text-center">20</td>
-                <td className="py-3 px-2 text-center">19.2</td>
-                <td className="py-3 px-2 text-center">20</td>
-                <td className="py-3 px-2 text-center">19.2</td>
-              </tr>
-              <tr className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6 text-left">Netscience</td>
-                <td className="py-3 px-2 text-center">9.50</td>
-                <td className="py-3 px-2 text-center">57.25</td>
-                <td className="py-3 px-2 text-center">57.25</td>
-                <td className="py-3 px-2 text-center">242.3</td>
-                <td className="py-3 px-2 text-center">242.3</td>
-                <td className="py-3 px-2 text-center">775.2</td>
-                <td className="py-3 px-2 text-center">775.2</td>
-                <td className="py-3 px-2 text-center">1938</td>
-                <td className="py-3 px-2 text-center">1938</td>
-                <td className="py-3 px-2 text-center">171</td>
-                <td className="py-3 px-2 text-center">171</td>
-                <td className="py-3 px-2 text-center">726.8</td>
-                <td className="py-3 px-2 text-center">726.8</td>
-                <td className="py-3 px-2 text-center">726.8</td>
-                <td className="py-3 px-2 text-center">726.8</td>
-              </tr>
-              <tr className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6 text-left">As-733</td>
-                <td className="py-3 px-2 text-center">8.19</td>
-                <td className="py-3 px-2 text-center">31.43</td>
-                <td className="py-3 px-2 text-center">31.35</td>
-                <td className="py-3 px-2 text-center">68.67</td>
-                <td className="py-3 px-2 text-center">67.94</td>
-                <td className="py-3 px-2 text-center">92.78</td>
-                <td className="py-3 px-2 text-center">90.23</td>
-                <td className="py-3 px-2 text-center">79.37</td>
-                <td className="py-3 px-2 text-center">75.13</td>
-                <td className="py-3 px-2 text-center">826.3</td>
-                <td className="py-3 px-2 text-center">153.8</td>
-                <td className="py-3 px-2 text-center">3376</td>
-                <td className="py-3 px-2 text-center">437.7</td>
-                <td className="py-3 px-2 text-center">3376</td>
-                <td className="py-3 px-2 text-center">437.7</td>
-              </tr>
+            </thead>
+            <tbody style={styles.tableBody}>
+              {higherOrderData.map((item, index) => (
+                <tr key={index} style={{...styles.tableRow, ...styles.tableRowHover}}>
+                  <td style={styles.tableCell}>{item.dataset}</td>
+                  <td style={styles.tableCellCenter}>{item.h}</td>
+                  <td style={styles.tableCellCenter}>{item.density.toFixed(1)}</td>
+                  <td style={styles.tableCellCenter}>{item.exactTime.toFixed(1)}</td>
+                  <td style={styles.tableCellCenter}>{item.coreExactTime.toFixed(2)}</td>
+                  <td style={styles.tableCellCenter}>{(item.exactTime / item.coreExactTime).toFixed(1)}x</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
