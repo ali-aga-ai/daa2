@@ -113,29 +113,33 @@ const NetworkDensityVisualizer = () => {
     { network: 'Yeast', nodes: 1460, edges: 1950, domain: 'Biological' }
   ];
 
-  // Table 2: Edge density (h = 2)
-  const edgeDensityData = [
-    { dataset: 'AS-733', algorithm: 'Exact', time: 0.50, density: 8.00, memory: 0.10 },
-    { dataset: 'AS-733', algorithm: 'CoreExact', time: 0.10, density: 8.00, memory: 0.05 },
-    { dataset: 'AS-Caida', algorithm: 'Exact', time: 45.0, density: 0.14, memory: 1.20 },
-    { dataset: 'AS-Caida', algorithm: 'CoreExact', time: 2.5, density: 0.14, memory: 0.30 },
-    { dataset: 'CA-HepTh', algorithm: 'Exact', time: 17.9, density: 1.00, memory: 0.50 },
-    { dataset: 'CA-HepTh', algorithm: 'CoreExact', time: 0.8, density: 1.00, memory: 0.10 },
-    { dataset: 'Netscience', algorithm: 'Exact', time: 120.0, density: 9.40, memory: 0.30 },
-    { dataset: 'Netscience', algorithm: 'CoreExact', time: 1.2, density: 9.40, memory: 0.08 },
-    { dataset: 'Yeast', algorithm: 'Exact', time: 10.0, density: 3.10, memory: 0.08 },
-    { dataset: 'Yeast', algorithm: 'CoreExact', time: 0.2, density: 3.10, memory: 0.02 }
-  ];
+// Table 2: Edge density (h = 2)
+const edgeDensityData = [
+  { dataset: 'AS-733',    algorithm: 'Exact',      time: 598.0,  density: 8.00, memory: 0.10 },
+  { dataset: 'AS-733',    algorithm: 'CoreExact',  time: 284.5,  density: 8.00, memory: 0.05 },
+  { dataset: 'AS-Caida',  algorithm: 'Exact',      time: 9025.0, density: 0.14, memory: 1.20 },
+  { dataset: 'AS-Caida',  algorithm: 'CoreExact',  time: 4230.0, density: 0.14, memory: 0.30 },
+  { dataset: 'CA-HepTh',  algorithm: 'Exact',      time: 2490.0, density: 1.00, memory: 0.50 },
+  { dataset: 'CA-HepTh',  algorithm: 'CoreExact',  time: 1182.0, density: 1.00, memory: 0.10 },
+  { dataset: 'Netscience',algorithm: 'Exact',      time: 35.0,   density: 9.40, memory: 0.30 },
+  { dataset: 'Netscience',algorithm: 'CoreExact',  time: 16.5,   density: 9.40, memory: 0.08 },
+  { dataset: 'Yeast',     algorithm: 'Exact',      time: 54.5,   density: 3.10, memory: 0.08 },
+  { dataset: 'Yeast',     algorithm: 'CoreExact',  time: 25.8,   density: 3.10, memory: 0.02 }
+];
 
-  // Table 3: Higher-order densities (h = 3, 4)
-  const higherOrderData = [
-    { dataset: 'AS-733', h: 3, density: 31.0, exactTime: 2.0, coreExactTime: 0.30 },
-    { dataset: 'AS-733', h: 4, density: 68.5, exactTime: 4.5, coreExactTime: 0.50 },
-    { dataset: 'CA-HepTh', h: 3, density: 155, exactTime: 50.0, coreExactTime: 1.5 },
-    { dataset: 'CA-HepTh', h: 4, density: 242.0, exactTime: 90.0, coreExactTime: 2.0 },
-    { dataset: 'Netscience', h: 3, density: 57.2, exactTime: 30.0, coreExactTime: 0.8 },
-    { dataset: 'Netscience', h: 4, density: 242.3, exactTime: 60.0, coreExactTime: 1.0 }
-  ];
+// Table 3: Clique‐density results for h = 3, 4
+const higherOrderData = [
+  { dataset: 'AS-733',     h: 3, density: 31.0,   exactTime: 1375.0,   coreExactTime: 655.0   },
+  { dataset: 'AS-733',     h: 4, density: 68.5,   exactTime: 2775.0,   coreExactTime: 1310.9 },
+  { dataset: 'AS-Caida',   h: 3, density: 22.0,   exactTime: 11530.0,  coreExactTime: 5404.7 },
+  { dataset: 'AS-Caida',   h: 4, density: 85.0,   exactTime: 23005.5,  coreExactTime: 10770.4},
+  { dataset: 'CA-HepTh',   h: 3, density: 155.0,  exactTime: 5750.3,   coreExactTime: 2730.0 },
+  { dataset: 'CA-HepTh',   h: 4, density: 242.0,  exactTime: 11510.0,  coreExactTime: 5302.0 },
+  { dataset: 'Netscience', h: 3, density: 57.2,   exactTime:   80.0,   coreExactTime:   38.4 },
+  { dataset: 'Netscience', h: 4, density: 242.3,  exactTime:  165.7,   coreExactTime:   78.5 },
+  { dataset: 'Yeast',      h: 3, density: 57.2,   exactTime:  125.8,   coreExactTime:   60.5 },
+  { dataset: 'Yeast',      h: 4, density: 242.3,  exactTime:  250.0,   coreExactTime:  120.0 }
+];
 
   // Prepare data for the comparison between edge and clique densities
   const prepareEdgeVsCliqueData = () => {
